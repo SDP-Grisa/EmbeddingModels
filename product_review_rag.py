@@ -12,7 +12,6 @@ from typing import List, Dict, Tuple
 import re
 from dataclasses import dataclass
 from rapidfuzz import fuzz, process, utils
-from typing import List, Tuple
 
 
 @dataclass
@@ -99,7 +98,6 @@ class ProductReviewRAG:
             first_review = reviews[0]
             
             # Strategy 1: Product Summary Chunk
-            # Combines product info + aggregated review sentiments
             product_summary = self._create_product_summary(first_review, reviews)
             chunks.append(ReviewChunk(
                 product_id=product_id,
@@ -114,7 +112,6 @@ class ProductReviewRAG:
             ))
             
             # Strategy 2: Individual Review Chunks
-            # Each review as a separate searchable unit
             for review in reviews:
                 if review['review_content'] and len(review['review_content']) > 10:
                     review_text = self._create_review_chunk(review)
@@ -240,23 +237,18 @@ Review: {review['review_content']}"""
         # Generate query embedding for semantic search
         query_embedding = self.model.encode([query])[0]
 
-        # ────────────────────────────────────────────────────────────────
-        # STEP 1: Product filtering with fuzzy matching
-        # ────────────────────────────────────────────────────────────────
+        # Product filtering with fuzzy matching
         if product_filter:
             filter_str = product_filter.strip()
             if not filter_str:
                 filtered_indices = list(range(len(self.chunks)))
             else:
-                filter_lower = utils.default_process(filter_str)  # clean + lowercase
-                
+                filter_lower = utils.default_process(filter_str)
                 candidates = []
                 
                 for i, chunk in enumerate(self.chunks):
-                    # We mainly want to match on product name
                     name_clean = utils.default_process(chunk.product_name)
                     
-                    # Combine different fuzzy scorers - this is very effective for product names
                     scores = [
                         fuzz.partial_ratio(filter_lower, name_clean),
                         fuzz.token_sort_ratio(filter_lower, name_clean),
@@ -264,35 +256,21 @@ Review: {review['review_content']}"""
                     ]
                     best_score = max(scores)
                     
-                    # Also give some credit to product ID match
                     id_score = fuzz.partial_ratio(filter_lower, chunk.product_id.lower())
-                    best_score = max(best_score, id_score * 0.9)  # slightly less weight
+                    best_score = max(best_score, id_score * 0.9)
                     
-                    # You can also add brand boost if you extract brands
-                    # if "boat" in filter_lower and "boat" in name_clean.lower():
-                    #     best_score = min(best_score + 12, 100)
-                    
-                    if best_score >= 72:  # ← tune this threshold (70–82 range is common)
+                    if best_score >= 72:
                         candidates.append((i, best_score))
                 
                 if not candidates:
-                    print(f"No chunks found matching fuzzy filter: '{product_filter}'")
                     return []
                 
-                # Sort candidates by fuzzy score descending
                 candidates.sort(key=lambda x: x[1], reverse=True)
-                
-                # Take top N candidates (prevents searching too many if huge catalog)
-                filtered_indices = [idx for idx, _ in candidates[:150]]  # adjust limit if needed
-                
-                print(f"Fuzzy matched {len(filtered_indices)} candidates "
-                    f"(best score: {candidates[0][1]:.0f}/100)")
+                filtered_indices = [idx for idx, _ in candidates[:150]]
         else:
             filtered_indices = list(range(len(self.chunks)))
         
-        # ────────────────────────────────────────────────────────────────
-        # STEP 2: Optional chunk type filter
-        # ────────────────────────────────────────────────────────────────
+        # Optional chunk type filter
         if chunk_type:
             filtered_indices = [
                 i for i in filtered_indices 
@@ -302,17 +280,13 @@ Review: {review['review_content']}"""
         if not filtered_indices:
             return []
         
-        # ────────────────────────────────────────────────────────────────
-        # STEP 3: Semantic similarity on filtered candidates
-        # ────────────────────────────────────────────────────────────────
+        # Semantic similarity on filtered candidates
         filtered_embeddings = self.embeddings[filtered_indices]
         
-        # Cosine similarity
         similarities = np.dot(filtered_embeddings, query_embedding) / (
             np.linalg.norm(filtered_embeddings, axis=1) * np.linalg.norm(query_embedding)
         )
         
-        # Get top-k by semantic similarity
         top_indices = np.argsort(similarities)[-top_k:][::-1]
         
         results = [
@@ -350,88 +324,6 @@ Review: {review['review_content']}"""
         return "\n---\n".join(context_parts)
 
 
-def demo_usage():
-    """Demonstrate the RAG system usage"""
-    
-    # Sample data path (adjust as needed)
-    data_path = '/mnt/user-data/uploads/your_file.csv'  # Will be updated
-    
-    # Check if data exists
-    if not os.path.exists(data_path):
-        print("Creating sample data for demonstration...")
-        # Create sample data from the provided example
-        sample_data = {
-            'product_id': ['B07JW9H4J1', 'B098NS6PVG'],
-            'product_name': [
-                'Wayona Nylon Braided USB to Lightning Fast Charging Cable',
-                'Ambrane Unbreakable 60W Fast Charging Type C Cable'
-            ],
-            'category': ['Computers&Accessories|USBCables'] * 2,
-            'rating': [4.2, 4.0],
-            'user_name': ['Manav,Adarsh gupta', 'ArdKn,Nirbhay kumar'],
-            'review_title': ['Satisfied,Charging is really fast', 'Good Cable,Good quality'],
-            'review_content': [
-                'Looks durable Charging is fine too,Charging is really fast good product',
-                'Strong cable good connection,Quality is good supports fast charging'
-            ],
-            'about_product': [
-                'High Compatibility Compatible With iPhone. Fast Charge Data Sync.',
-                'Compatible with all Type C devices. Supports Quick Charging.'
-            ]
-        }
-        df = pd.DataFrame(sample_data)
-    else:
-        df = pd.read_csv(data_path)
-    
-    print("=" * 80)
-    print("PRODUCT REVIEW RAG SYSTEM DEMO")
-    print("=" * 80)
-    
-    # Initialize RAG system
-    rag = ProductReviewRAG()
-    
-    # Create chunks
-    chunks = rag.create_chunks(df)
-    
-    # Generate embeddings
-    embeddings = rag.generate_embeddings(chunks)
-    
-    # Save locally
-    rag.save_locally(chunks, embeddings)
-    
-    print("\n" + "=" * 80)
-    print("RETRIEVAL EXAMPLES")
-    print("=" * 80)
-    
-    # Example queries
-    queries = [
-        ("Is the Wayona cable durable?", "Wayona"),
-        ("Does it support fast charging?", "Ambrane"),
-        ("What do users say about the quality?", None)
-    ]
-    
-    for query, product_filter in queries:
-        print(f"\nQuery: '{query}'")
-        if product_filter:
-            print(f"Product Filter: {product_filter}")
-        print("-" * 80)
-        
-        context = rag.search(query, product_filter, top_k=2)
-        print(context)
-        print()
-    
-    # Demonstrate loading from storage
-    print("\n" + "=" * 80)
-    print("LOADING FROM STORAGE")
-    print("=" * 80)
-    
-    rag_loaded = ProductReviewRAG()
-    rag_loaded.load_locally()
-    
-    print("\nPerforming search with loaded data...")
-    context = rag_loaded.search("cable durability", top_k=2)
-    print(context)
-
-
 if __name__ == "__main__":
-    demo_usage()
+    print("Product Review RAG System")
+    print("This module is meant to be imported by the FastAPI app.")

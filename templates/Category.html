@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ category_name }} - Products</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f7fafc;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .navbar h1 {
+            color: white;
+            font-size: 1.8em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .category-header {
+            margin-bottom: 30px;
+        }
+
+        .category-header h2 {
+            color: #2d3748;
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+
+        .product-count-text {
+            color: #718096;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .product-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2d3748;
+            line-height: 1.4;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .rating-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        .product-id {
+            color: #a0aec0;
+            font-size: 0.85em;
+            margin-bottom: 12px;
+        }
+
+        .reviews-preview {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            flex-grow: 1;
+        }
+
+        .review-snippet {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .review-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9em;
+            margin-bottom: 6px;
+        }
+
+        .review-content {
+            color: #4a5568;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .review-user {
+            color: #a0aec0;
+            font-size: 0.8em;
+            margin-top: 6px;
+        }
+
+        .view-details-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-top: auto;
+            display: block;
+            transition: opacity 0.3s ease;
+            align-self: stretch;
+        }
+
+        .view-details-btn:hover {
+            opacity: 0.9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-state h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .empty-state p {
+            color: #718096;
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar h1 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/" class="back-btn">← All Categories</a>
+            <h1>{{ category_name }}</h1>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="category-header">
+            <h2>Products in {{ category_name }}</h2>
+            <p class="product-count-text">{{ products|length }} products found</p>
+        </div>
+
+        {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <a href="/product/{{ product.id }}" class="product-card">
+                <div class="product-header">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="rating-badge">⭐ {{ product.rating }}/5</div>
+                </div>
+
+                <div class="product-id">ID: {{ product.id }}</div>
+
+                {% if product.reviews %}
+                <div class="reviews-preview">
+                    {% for review in product.reviews[:2] %}
+                    <div class="review-snippet">
+                        <div class="review-title">{{ review.title }}</div>
+                        <div class="review-content">{{ review.content }}</div>
+                        <div class="review-user">- {{ review.user }}</div>
+                    </div>
+                    {% endfor %}
+
+                    {% if product.reviews|length > 2 %}
+                    <div style="color: #718096; font-size: 0.9em; margin-top: 10px;">
+                        +{{ product.reviews|length - 2 }} more reviews
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="view-details-btn">
+                    View Details & Ask Questions 💬
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No products found</h3>
+            <p>There are no products available in this category.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

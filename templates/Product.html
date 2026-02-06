@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - Product Details</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f7fafc;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        /* Product Details Section */
+        .product-details {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .product-header {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .product-title {
+            font-size: 2em;
+            color: #2d3748;
+            margin-bottom: 16px;
+            line-height: 1.3;
+            font-weight: 700;
+        }
+
+        .product-meta {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .rating-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .product-id-display {
+            color: #718096;
+            font-size: 0.9em;
+            background: #f7fafc;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .product-about {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .product-about h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .product-features {
+            display: grid;
+            gap: 12px;
+        }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 12px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .feature-item:hover {
+            background: #edf2f7;
+            transform: translateX(4px);
+        }
+
+        .feature-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            color: #4a5568;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .reviews-section h3 {
+            color: #2d3748;
+            margin-bottom: 24px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .review-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .review-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .review-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.05em;
+        }
+
+        .review-user {
+            color: #718096;
+            font-size: 0.85em;
+            background: #f7fafc;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .review-content {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+
+        /* Chatbot Section */
+        .chatbot-section {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .chatbot-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 700px;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chatbot-header h3 {
+            font-size: 1.3em;
+            margin-bottom: 6px;
+        }
+
+        .chatbot-subtitle {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f7fafc;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: #2d3748;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .message-bubble strong {
+            display: block;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .message.bot .message-bubble strong {
+            border-bottom-color: #e2e8f0;
+            color: #667eea;
+        }
+
+        .typing-indicator {
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .suggestion-chip {
+            background: #f7fafc;
+            color: #667eea;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 24px;
+            font-size: 0.95em;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .chatbot-section {
+                position: static;
+            }
+
+            .chatbot-container {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="javascript:history.back()" class="back-btn">← Back</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Product Details -->
+        <div class="product-details">
+            <div class="product-header">
+                <h1 class="product-title">{{ product.name }}</h1>
+                <div class="product-meta">
+                    <div class="rating-display">⭐ {{ product.rating }}/5.0</div>
+                    <div class="product-id-display">Product ID: {{ product.id }}</div>
+                </div>
+            </div>
+
+            {% if product.about %}
+            <div class="product-about">
+                <h3>Product Details</h3>
+                <div class="product-features">
+                    {% set features = product.about.split('.') %}
+                    {% for feature in features %}
+                    {% if feature.strip() %}
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span class="feature-text">{{ feature.strip() }}</span>
+                        <div class="breadcrumbs">{{ product.category }}</div>
+                        
+                        <h1 class="product-title">{{ product.product_name }}</h1>
+                        
+                        <div class="meta">
+                            <div class="rating-badge">⭐ {{ product.rating }} / 5</div>
+                            <!-- <span style="color:#6b7280; font-size:0.95rem;">({{ product.reviews|length }} ratings)</span> -->
+                        </div>
+                        
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="reviews-section">
+                <h3>💬 Customer Reviews ({{ product.reviews|length }})</h3>
+
+                {% if product.reviews %}
+                {% for review in product.reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-title">{{ review.title }}</div>
+                        <div class="review-user">{{ review.user }}</div>
+                    </div>
+                    <div class="review-content">{{ review.content }}</div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p style="color: #718096;">No reviews available yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Chatbot Section -->
+        <div class="chatbot-section">
+            <div class="chatbot-container">
+                <div class="chatbot-header">
+                    <h3>🤖 Ask About This Product</h3>
+                    <p class="chatbot-subtitle">Get instant answers from customer reviews</p>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot">
+                        <div class="message-bubble">
+                            <strong>Welcome! 👋</strong>
+                            I'm here to help you learn more about this product based on customer reviews. Feel free to
+                            ask me anything!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="suggestion-chips">
+                        <div class="suggestion-chip" onclick="askQuestion('Is this product durable?')">
+                            Is it durable?
+                        </div>
+                        <div class="suggestion-chip" onclick="askQuestion('What do customers say about quality?')">
+                            Quality feedback?
+                        </div>
+                        <div class="suggestion-chip" onclick="askQuestion('Is it worth the price?')">
+                            Worth buying?
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="chat-input" id="questionInput"
+                            placeholder="Ask a question about this product..." onkeypress="handleKeyPress(event)">
+                        <button class="send-btn" id="sendBtn" onclick="sendQuestion()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const productId = "{{ product.id }}";
+        const chatMessages = document.getElementById('chatMessages');
+        const questionInput = document.getElementById('questionInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+
+            if (isUser) {
+                bubbleDiv.textContent = text;
+            } else {
+                // Format bot response with line breaks
+                bubbleDiv.innerHTML = text.replace(/\n/g, '<br>');
+            }
+
+            messageDiv.appendChild(bubbleDiv);
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        async function sendQuestion() {
+            const question = questionInput.value.trim();
+
+            if (!question) return;
+
+            // Disable input
+            questionInput.disabled = true;
+            sendBtn.disabled = true;
+
+            // Add user message
+            addMessage(question, true);
+            questionInput.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        question: question
+                    })
+                });
+
+                const data = await response.json();
+
+                removeTypingIndicator();
+
+                if (data.error) {
+                    addMessage(`❌ Error: ${data.error}`);
+                } else {
+                    addMessage(data.answer);
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('❌ Failed to get response. Please try again.');
+                console.error('Error:', error);
+            }
+
+            // Re-enable input
+            questionInput.disabled = false;
+            sendBtn.disabled = false;
+            questionInput.focus();
+        }
+
+        function askQuestion(question) {
+            questionInput.value = question;
+            sendQuestion();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendQuestion();
+            }
+        }
+
+        // Focus input on load
+        questionInput.focus();
+    </script>
+</body>
+
+</html>
